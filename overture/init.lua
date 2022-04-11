@@ -1,7 +1,7 @@
 ---
 -- @module Overture
 
-local PATH = (...):gsub('%.init$', '')
+local PATH = (...):gsub("%.init$", "")
 
 local Overture = {
 	_VERSION     = "0.1",
@@ -27,5 +27,8 @@ local Overture = {
 		SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	]]
 }
+
+Overture.entity = require(PATH..".entity")
+Overture.component = require(PATH..".component")
 
 return Overture
