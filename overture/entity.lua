@@ -4,62 +4,92 @@ local ComponentProvider = require(PATH..".componentProvider")
 
 local Entity = {}
 local EntityMt = {
-    __index = function(entity, key)
-        return
-            Entity[key] or
-            entity.components[key] or
-            entity.archetype.methods[key] or
-            nil
-    end,
+	__index = function(entity, key)
+		return
+			Entity[key] or
+			entity.components[key] or
+			-- entity.archetype.methods[key] or
+			nil
+	end,
 }
 
 local function new()
-    local entity = setmetatable({
-        archetype = nil,
-        components = {},
-    }, EntityMt)
+	local entity = setmetatable({
+		archetype = nil,
+		components = {},
+	}, EntityMt)
 
-    return entity
+	return entity
 end
 
 function Entity:give(componentName, ...)
-    local componentPrototype = ComponentProvider:get(componentName)
+	local componentPrototype = ComponentProvider:get(componentName)
 
-    if (not componentPrototype) then
-        error("")
-    end
+	if (not componentPrototype) then
+		error("")
+	end
 
-    local component = {}
-    componentPrototype.__populate(self, ...)
+	local componentInstance = componentPrototype(self, ...)
+	self.components[componentName] = componentInstance
 
-    self.components[componentName] = component
+	if (componentPrototype.onGivenHandler) then
+		componentPrototype.onGivenHandler(self)
+	end
 
-    return self
+	return self
 end
 
 function Entity:giveInstance(componentInstance)
-    local componentName = componentInstance.__name
-    self.components[componentName] = componentInstance
+	local componentPrototype = componentInstance.__prototype
 
-    return self
+	local componentName = componentPrototype.name
+	self.components[componentName] = componentInstance
+
+	if (componentPrototype.onGivenHandler) then
+		componentPrototype.onGivenHandler(self)
+	end
+
+	return self
 end
 
 function Entity:ensure(componentName, ...)
-    if (self:has(componentName)) then
-        return
-    end
+	if (self:has(componentName)) then
+		return
+	end
 
-    self:give(componentName, ...)
+	self:give(componentName, ...)
 end
 
-function Entity:has(componentName)
-    return self.components[componentName] and true or false
+function Entity:ensureInstance(componentInstance)
+
 end
 
 function Entity:remove(componentName)
-    self.components[componentName] = nil
+	local componentInstance = self.components[componentName]
+	local componentPrototype = componentInstance.__prototype
+
+	if (componentPrototype.onRemovedHandler) then
+		componentPrototype.onRemovedHandler(self)
+	end
+
+	self.components[componentName] = nil
+end
+
+function Entity:removeInstance(componentInstance)
+	local componentName = componentInstance.__prototype.name
+	local componentPrototype = componentInstance.__prototype
+
+	if (componentPrototype.onRemovedHandler) then
+		componentPrototype.onRemovedHandler(self)
+	end
+
+	self.components[componentName] = nil
+end
+
+function Entity:has(componentName)
+	return self.components[componentName] and true or false
 end
 
 return setmetatable(Entity, {
-    __call = function() return new() end,
+	__call = function() return new() end,
 })
