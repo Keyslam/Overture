@@ -15,6 +15,7 @@ local function new()
 	return world
 end
 
+
 function World:giveSingleton(componentName, ...)
 	local componentPrototype = ComponentProvider:get(componentName)
 
@@ -45,12 +46,49 @@ function World:giveSingletonInstance(componentInstance)
 	return self
 end
 
-function World:removeSingleton(componentName)
+function World:ensureSingleton(componentName, ...)
+	if (self:has(componentName)) then
+		return self
+	end
 
+	self:give(componentName, ...)
 end
 
-function World:removeSingletonInstance()
+function World:ensureSingletonInstance(componentInstance)
+	local componentName = componentInstance.__prototype.name
 
+	if (self:has(componentName)) then
+		return self
+	end
+
+	self:giveInstance(componentInstance)
+end
+
+function World:removeSingleton(componentName)
+	if (not self:has(componentName)) then
+		error("")
+	end
+
+	local componentPrototype = self[componentName].__prototype
+
+	if (componentPrototype.onRemovedSingletonHandler) then
+		componentPrototype.onRemovedSingletonHandler(self)
+	end
+
+	self.components[componentName] = nil
+
+	return self
+end
+
+function World:removeSingletonInstance(componentInstance)
+	local componentName = componentInstance.__prototype.name
+	local componentPrototype = componentInstance.__prototype
+
+	if (componentPrototype.onRemoveHandler) then
+		componentPrototype.onRemoveHandler(self)
+	end
+
+	self.components[componentName] = nil
 end
 
 function World:has(componentName)

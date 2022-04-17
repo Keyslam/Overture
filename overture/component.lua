@@ -36,8 +36,8 @@ function Component:onGiven(handler)
     return self
 end
 
-function Component:onRemoved(handler)
-    self.onRemovedHandler = handler
+function Component:onRemove(handler)
+    self.onRemoveHandler = handler
 
     return self
 end

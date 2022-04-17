@@ -54,22 +54,28 @@ end
 
 function Entity:ensure(componentName, ...)
 	if (self:has(componentName)) then
-		return
+		return self
 	end
 
 	self:give(componentName, ...)
 end
 
 function Entity:ensureInstance(componentInstance)
+	local componentName = componentInstance.__prototype.name
 
+	if (self:has(componentName)) then
+		return self
+	end
+
+	self:giveInstance(componentInstance)
 end
 
 function Entity:remove(componentName)
 	local componentInstance = self.components[componentName]
 	local componentPrototype = componentInstance.__prototype
 
-	if (componentPrototype.onRemovedHandler) then
-		componentPrototype.onRemovedHandler(self)
+	if (componentPrototype.onRemoveHandler) then
+		componentPrototype.onRemoveHandler(self)
 	end
 
 	self.components[componentName] = nil
@@ -79,15 +85,15 @@ function Entity:removeInstance(componentInstance)
 	local componentName = componentInstance.__prototype.name
 	local componentPrototype = componentInstance.__prototype
 
-	if (componentPrototype.onRemovedHandler) then
-		componentPrototype.onRemovedHandler(self)
+	if (componentPrototype.onRemoveHandler) then
+		componentPrototype.onRemoveHandler(self)
 	end
 
 	self.components[componentName] = nil
 end
 
 function Entity:has(componentName)
-	return self.components[componentName] and true or false
+	return self.components[componentName] ~= nil
 end
 
 return setmetatable(Entity, {
