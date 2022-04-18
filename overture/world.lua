@@ -1,20 +1,58 @@
 local PATH = (...):gsub("%.[^%.]+$", "")
 
+local SpareSet = require(PATH..".sparseSet")
 local ComponentProvider = require(PATH..".componentProvider")
+local SystemProvider = require(PATH..".systemProvider")
 
 local World = {}
 local WorldMt = {
 	__index = World,
 }
 
-local function new()
+local function new(systemNames)
 	local world = setmetatable({
+		entities = SpareSet(),
 		components = {},
+
+		__isWorld = true,
 	}, WorldMt)
+
+	for _, systemName in ipairs(systemNames) do
+		if (not SystemProvider:has(systemName)) then
+			error("")
+		end
+
+		local systemPrototype = SystemProvider:get(systemName)
+
+		-- TODO: Build pools
+	end
 
 	return world
 end
 
+function World:giveEntity(entity)
+	if (self:hasEntity(entity)) then
+		return self
+	end
+
+	self.entities:add(entity)
+
+	return self
+end
+
+function World:removeEntity(entity)
+	if (self:hasEntity(entity)) then
+		return self
+	end
+
+	self.entities:remove(entity)
+
+	return self
+end
+
+function World:hasEntity(entity)
+	return self.entities:has(entity) and true or false
+end
 
 function World:giveSingleton(componentName, ...)
 	local componentPrototype = ComponentProvider:get(componentName)
@@ -91,10 +129,10 @@ function World:removeSingletonInstance(componentInstance)
 	self.components[componentName] = nil
 end
 
-function World:has(componentName)
+function World:hasSingleton(componentName)
 	return self.components[componentName] and true or false
 end
 
 return setmetatable(World, {
-	__call = function() return new() end,
+	__call = function(_, ...) return new(...) end,
 })

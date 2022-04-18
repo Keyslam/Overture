@@ -17,6 +17,8 @@ local function new()
 	local entity = setmetatable({
 		archetype = nil,
 		components = {},
+
+		__isEntity = true,
 	}, EntityMt)
 
 	return entity

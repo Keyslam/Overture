@@ -20,9 +20,28 @@ end)
 	print("Removed as singleton")
 end)
 
+Overture.system("test", {"position"})
+:onAdded(function(world)
+	print("added to", world)
+end)
+:onMatch(function(world, pool, e)
+	print("matched", pool)
+end)
+:onUnmatch(function(world, pool, e)
+	print("unmatched", pool)
+end)
+:onEmit("update", function(world, pool, dt)
+	for _, e in ipairs(pool) do
+		print(e)
+	end
+end)
+
+
 local position = Position()
 
-local world = Overture.world()
+local world = Overture.world({
+	"test"
+})
 world:giveSingletonInstance(position)
 -- world:giveSingleton("position", 10, 10)
 

@@ -30,6 +30,7 @@ local Overture = {
 
 Overture.entity = require(PATH..".entity")
 Overture.component = require(PATH..".component")
+Overture.system = require(PATH..".system")
 Overture.world = require(PATH..".world")
 
 return Overture
