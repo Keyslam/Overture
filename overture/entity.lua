@@ -1,5 +1,6 @@
 local PATH = (...):gsub("%.[^%.]+$", "")
 
+local Configuration = require(PATH..".configuration")
 local ComponentProvider = require(PATH..".componentProvider")
 
 local Entity = {}
@@ -96,6 +97,10 @@ end
 
 function Entity:has(componentName)
 	return self.components[componentName] ~= nil
+end
+
+if (Configuration.doArgumentChecking) then
+
 end
 
 return setmetatable(Entity, {

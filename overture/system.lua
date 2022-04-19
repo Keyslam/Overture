@@ -1,5 +1,6 @@
 local PATH = (...):gsub("%.[^%.]+$", "")
 
+local Configuration = require(PATH..".configuration")
 local SystemProvider = require(PATH..".systemProvider")
 
 local System = {}
@@ -12,7 +13,7 @@ local function new(systemName, poolDefinition)
 		name = systemName,
 		handlers = {},
 
-		__isSystem = true,
+		__isSystemPrototype = true,
 	}, SystemMt)
 
 	SystemProvider:register(systemName, system)
@@ -42,6 +43,10 @@ function System:onUnmatch(onUnmatchHandler)
 	self.onUnmatchHandler = onUnmatchHandler
 
 	return self
+end
+
+if (Configuration.doArgumentChecking) then
+
 end
 
 return setmetatable(System, {

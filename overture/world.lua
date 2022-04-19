@@ -1,5 +1,6 @@
 local PATH = (...):gsub("%.[^%.]+$", "")
 
+local Configuration = require(PATH..".configuration")
 local SpareSet = require(PATH..".sparseSet")
 local ComponentProvider = require(PATH..".componentProvider")
 local SystemProvider = require(PATH..".systemProvider")
@@ -14,6 +15,7 @@ local function new(systemNames)
 		entities = SpareSet(),
 		components = {},
 
+		__isEmitting = false,
 		__isWorld = true,
 	}, WorldMt)
 
@@ -131,6 +133,22 @@ end
 
 function World:hasSingleton(componentName)
 	return self.components[componentName] and true or false
+end
+
+function World:emit(eventName, ...)
+	if (self:isEmitting()) then
+		
+	else
+
+	end
+end
+
+function World:isEmitting()
+	return self.__isEmitting
+end
+
+if (Configuration.doArgumentChecking) then
+
 end
 
 return setmetatable(World, {
