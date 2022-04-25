@@ -50,3 +50,5 @@ local e1 = Overture.entity()
 
 local e2 = Overture.entity()
 :giveInstance(e1.position)
+
+world:emit("schedule", 10, 20, nil, 30)
