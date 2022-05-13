@@ -1,9 +1,11 @@
 local PATH = (...):gsub("%.[^%.]+$", "")
 
 local Configuration = require(PATH..".configuration")
-local SpareSet = require(PATH..".sparseSet")
+local SparseSet = require(PATH..".sparseSet")
 local ComponentProvider = require(PATH..".componentProvider")
 local SystemProvider = require(PATH..".systemProvider")
+local Entity = require(PATH..".entity")
+local Archetype = require(PATH..".archetype")
 
 local World = {}
 local WorldMt = {
@@ -11,9 +13,15 @@ local WorldMt = {
 }
 
 local function new(systemNames)
+	systemNames = systemNames or {}
+
 	local world = setmetatable({
-		entities = SpareSet(),
+		entities = SparseSet(),
 		components = {},
+
+		__archetypes = {
+			empty = Archetype(),
+		},
 
 		__scheduledEmits = {},
 		__scheduledEmitsIndex = 1,
@@ -41,6 +49,7 @@ function World:giveEntity(entity)
 	end
 
 	self.entities:add(entity)
+	self.__archetypes.empty:add(entity)
 
 	return self
 end
@@ -155,7 +164,6 @@ function World:__scheduleEmit(eventName, ...)
 	return self
 end
 
-
 function World:__emitRaw(eventName, ...)
 	print(eventName, ...)
 
@@ -248,6 +256,15 @@ function World:emit(eventName, ...)
 	end
 
 	return self
+end
+
+function World:flush()
+	for _, entity in ipairs(self.entities) do
+		if (entity.__isDirty) then
+			entity:flush()
+			entity.__isDirty = false
+		end
+	end
 end
 
 function World:isEmitting()

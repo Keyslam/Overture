@@ -1,54 +1,21 @@
 local Overture = require("overture")
-local SpareSet = require("overture.sparseSet")
+local SparseSet = require("overture.sparseSet")
 
 local Position = Overture.component("position", function(position, x, y)
 	position.x = x
     position.y = y
 
-	position.entities = SpareSet()
-end)
-:onGiven(function(e)
-	e.position.entities:add(e)
-end)
-:onRemove(function(e)
-	e.position.entities:remove(e)
-end)
-:onGivenSingleton(function(world)
-	print("Given as singleton")
-end)
-:onRemoveSingleton(function(world)
-	print("Removed as singleton")
+	position.entities = SparseSet()
 end)
 
-Overture.system("test", {"position"})
-:onAdded(function(world)
-	print("added to", world)
-end)
-:onMatch(function(world, pool, e)
-	print("matched", pool)
-end)
-:onUnmatch(function(world, pool, e)
-	print("unmatched", pool)
-end)
-:onEmit("update", function(world, pool, dt)
-	for _, e in ipairs(pool) do
-		print(e)
-	end
-end)
+local world = Overture.world()
 
-
-local position = Position()
-
-local world = Overture.world({
-	"test"
-})
-world:giveSingletonInstance(position)
--- world:giveSingleton("position", 10, 10)
-
-local e1 = Overture.entity()
+local e1 = Overture.entity(world)
 :give("position", 10, 20)
 
-local e2 = Overture.entity()
-:giveInstance(e1.position)
+-- local e2 = Overture.entity(world)
+-- :give("position", 30, 40)
 
-world:emit("schedule", 10, 20, nil, 30)
+world:flush()
+
+print(e1.position.x, e1.position.y)

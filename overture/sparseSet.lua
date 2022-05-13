@@ -1,15 +1,15 @@
-local SpareSet = {}
-local SpareSetMt = {
-    __index = SpareSet
+local SparseSet = {}
+local SparseSetMt = {
+    __index = SparseSet
 }
 
 local function new()
-    local spareSet = setmetatable({}, SpareSetMt)
+    local SparseSet = setmetatable({}, SparseSetMt)
 
-    return spareSet
+    return SparseSet
 end
 
-function SpareSet:add(element)
+function SparseSet:add(element)
     local index = #self + 1
 
     self[index] = element
@@ -18,7 +18,7 @@ function SpareSet:add(element)
     return self
 end
 
-function SpareSet:remove(element)
+function SparseSet:remove(element)
     local index = self[element]
     local count = #self
 
@@ -39,18 +39,18 @@ function SpareSet:remove(element)
     return self
 end
 
-function SpareSet:has(element)
+function SparseSet:has(element)
     return self[element] and true or false
 end
 
-function SpareSet:indexOf(element)
+function SparseSet:indexOf(element)
     return self[element]
 end
 
-function SpareSet:elementAtIndex(index)
+function SparseSet:elementAtIndex(index)
     return self[index]
 end
 
-return setmetatable(SpareSet, {
+return setmetatable(SparseSet, {
     __call = function(_, ...) return new(...) end,
 })
