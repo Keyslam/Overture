@@ -26,6 +26,7 @@ local EntityMt = {
 
 local function new(world)
 	local entity = setmetatable({
+		world = world,
 		archetype = nil,
 		components = {},
 
@@ -36,9 +37,7 @@ local function new(world)
 		__isEntity = true,
 	}, EntityMt)
 
-	if (world) then
-		world:giveEntity(entity)
-	end
+	world:giveEntity(entity)
 
 	return entity
 end
@@ -56,7 +55,7 @@ function Entity:give(componentName, ...)
 		self.componentActions[self.componentActionsIndex + 1 + 1 + i] = select(i, ...)
 	end
 
-	self.componentActionsIndex = self.componentActionsIndex + 1 + 1 + argCount
+	self.componentActionsIndex = self.componentActionsIndex + 1 + 1 + argCount + 1
 
 	self.__isDirty = true
 
@@ -197,7 +196,9 @@ function Entity:flush()
 				componentPrototype.onGivenHandler(self)
 			end
 
-			index = index + 2 + argumentsCount
+			index = index + 2 + argumentsCount + 1
+
+			self.world:__onEntityGainedComponent(self, componentName)
 		end
 	end
 end

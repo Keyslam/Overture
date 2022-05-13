@@ -19,9 +19,7 @@ local function new(systemNames)
 		entities = SparseSet(),
 		components = {},
 
-		__archetypes = {
-			empty = Archetype(),
-		},
+		__archetypes = {},
 
 		__scheduledEmits = {},
 		__scheduledEmitsIndex = 1,
@@ -29,6 +27,10 @@ local function new(systemNames)
 		__isEmitting = false,
 		__isWorld = true,
 	}, WorldMt)
+
+	local emptyArchetype = Archetype()
+	world.__archetypes[0] = { emptyArchetype }
+	world.__emptyArchetype = emptyArchetype
 
 	for _, systemName in ipairs(systemNames) do
 		if (not SystemProvider:has(systemName)) then
@@ -49,7 +51,9 @@ function World:giveEntity(entity)
 	end
 
 	self.entities:add(entity)
-	self.__archetypes.empty:add(entity)
+
+	self.__emptyArchetype:add(entity)
+	entity.archetype = self.__emptyArchetype
 
 	return self
 end
@@ -269,6 +273,50 @@ end
 
 function World:isEmitting()
 	return self.__isEmitting
+end
+
+function World:__onEntityGainedComponent(entity, componentName)
+	local currentArchetype = entity.archetype
+	local nextArchetype = currentArchetype.addTransitions[componentName]
+
+	if (nextArchetype) then
+		print("has transition")
+	end
+
+	if (not nextArchetype) then
+		for _, archetype in ipairs(self.__archetypes[#entity.components]) do
+			nextArchetype = archetype.addTransitions[componentName]
+
+			if (nextArchetype) then
+				print("found transition")
+
+				currentArchetype.addTransitions[componentName] = nextArchetype
+				nextArchetype.removeTransitions[componentName] = currentArchetype
+
+				break
+			end
+		end
+	end
+
+	if (not nextArchetype) then
+		print("created transition", componentName)
+
+		nextArchetype = Archetype()
+
+		currentArchetype.addTransitions[componentName] = nextArchetype
+		nextArchetype.removeTransitions[componentName] = currentArchetype
+
+		self.__archetypes[#entity.components] = self.__archetypes[#entity.components] or {}
+		self.__archetypes[#entity.components][componentName] = nextArchetype
+	end
+
+	entity.archetype:remove(entity)
+	entity.archetype = nextArchetype
+	entity.archetype:add(entity)
+end
+
+function World:__onEntityLostComponent(entity, componentName)
+	print(entity, "lost", componentName)
 end
 
 if (Configuration.doArgumentChecking) then

@@ -10,13 +10,19 @@ local ArchetypeMt = {
 local function new()
     local archetype = setmetatable({
 		entities = SparseSet(),
+		addTransitions = {},
+		removeTransitions = {},
     }, ArchetypeMt)
 
     return archetype
 end
 
 function Archetype:add(entity)
+	self.entities:add(entity)
+end
 
+function Archetype:remove(entity)
+	self.entities:remove(entity)
 end
 
 return setmetatable(Archetype, {
