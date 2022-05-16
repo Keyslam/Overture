@@ -11,10 +11,11 @@ local ComponentMt = {
     end
 }
 
-local function new(componentName, populateFunction)
-    local componentPrototype = setmetatable({
+local function new(componentName, componentDefinition)
+	local componentPrototype = setmetatable({
         name = componentName,
-        populate = populateFunction,
+
+		componentDefinition = componentDefinition,
 
 		__isComponentPrototype = true,
     }, ComponentMt)
@@ -25,37 +26,24 @@ local function new(componentName, populateFunction)
 end
 
 function Component:new(...)
-    local component = {}
-    component.__prototype = self
-    component.__isComponent = true
+    local componentInstance = {}
+    componentInstance.__prototype = self
+    componentInstance.__isComponent = true
 
-    self.populate(component, ...)
+    self:populate(componentInstance, ...)
 
-    return component
+    return componentInstance
 end
 
-function Component:onGiven(onGivenHandler)
-    self.onGivenHandler = onGivenHandler
+function Component:populate(componentInstance, ...)
+	for i, definition in ipairs(self.componentDefinition) do
+		local value = select(i, ...)
+		if (value == nil) then
+			value = definition.default
+		end
 
-    return self
-end
-
-function Component:onRemove(onRemoveHandler)
-    self.onRemoveHandler = onRemoveHandler
-
-    return self
-end
-
-function Component:onGivenSingleton(onGivenSingletonHandler)
-    self.onGivenSingletonHandler = onGivenSingletonHandler
-
-    return self
-end
-
-function Component:onRemoveSingleton(onRemoveSingletonHandler)
-    self.onRemovedSingletonHandler = onRemoveSingletonHandler
-
-    return self
+		componentInstance[definition.name] = value
+	end
 end
 
 if (Configuration.doArgumentChecking) then

@@ -1,5 +1,5 @@
 local Configuration = {}
 
-Configuration.doArgumentChecking = true
+Configuration.doArgumentChecking = false
 
 return Configuration
