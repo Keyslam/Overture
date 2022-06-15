@@ -1,56 +1,58 @@
 local SparseSet = {}
 local SparseSetMt = {
-    __index = SparseSet
+	__index = SparseSet
 }
 
 local function new()
-    local SparseSet = setmetatable({}, SparseSetMt)
+	local sparseSet = setmetatable({
 
-    return SparseSet
+	}, SparseSetMt)
+
+	return sparseSet
 end
 
 function SparseSet:add(element)
-    local index = #self + 1
+	local index = #self + 1
 
-    self[index] = element
-    self[element] = index
+	self[index] = element
+	self[element] = index
 
-    return self
+	return self
 end
 
 function SparseSet:remove(element)
-    local index = self[element]
-    local count = #self
+	local index = self[element]
+	local count = #self
 
-    if (index == #self) then
-        self[index] = nil
-        self[element] = nil
+	if (index == #self) then
+		self[index] = nil
+		self[element] = nil
 
-        return self
-    end
+		return self
+	end
 
-    local swappingElement = self[count]
+	local swappingElement = self[count]
 
-    self[index] = swappingElement
-    self[swappingElement] = index
-    self[element] = nil
-    self[count] = nil
+	self[index] = swappingElement
+	self[swappingElement] = index
+	self[element] = nil
+	self[count] = nil
 
-    return self
+	return self
 end
 
 function SparseSet:has(element)
-    return self[element] and true or false
+	return self[element] and true or false
 end
 
 function SparseSet:indexOf(element)
-    return self[element]
+	return self[element]
 end
 
 function SparseSet:elementAtIndex(index)
-    return self[index]
+	return self[index]
 end
 
 return setmetatable(SparseSet, {
-    __call = function(_, ...) return new(...) end,
+	__call = function(_, ...) return new(...) end,
 })

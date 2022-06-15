@@ -45,17 +45,15 @@ local function new(systemNames)
 	return world
 end
 
-function World:giveEntity(entity)
-	if (self:hasEntity(entity)) then
-		return self
-	end
+function World:newEntity()
+	local entity = Entity(self)
 
 	self.entities:add(entity)
 
 	self.__emptyArchetype:add(entity)
 	entity.archetype = self.__emptyArchetype
 
-	return self
+	return entity
 end
 
 function World:removeEntity(entity)
@@ -81,11 +79,6 @@ function World:giveSingleton(componentName, ...)
 
 	local componentInstance = componentPrototype(self, ...)
 	self.components[componentName] = componentInstance
-
-	if (componentPrototype.onGivenSingletonHandler) then
-		componentPrototype.onGivenSingletonHandler(self)
-	end
-
 	return self
 end
 
@@ -94,10 +87,6 @@ function World:giveSingletonInstance(componentInstance)
 
 	local componentName = componentPrototype.name
 	self.components[componentName] = componentInstance
-
-	if (componentPrototype.onGivenSingletonHandler) then
-		componentPrototype.onGivenSingletonHandler(self)
-	end
 
 	return self
 end
@@ -125,12 +114,6 @@ function World:removeSingleton(componentName)
 		error("")
 	end
 
-	local componentPrototype = self[componentName].__prototype
-
-	if (componentPrototype.onRemovedSingletonHandler) then
-		componentPrototype.onRemovedSingletonHandler(self)
-	end
-
 	self.components[componentName] = nil
 
 	return self
@@ -138,11 +121,6 @@ end
 
 function World:removeSingletonInstance(componentInstance)
 	local componentName = componentInstance.__prototype.name
-	local componentPrototype = componentInstance.__prototype
-
-	if (componentPrototype.onRemoveHandler) then
-		componentPrototype.onRemoveHandler(self)
-	end
 
 	self.components[componentName] = nil
 end
@@ -273,6 +251,10 @@ end
 
 function World:isEmitting()
 	return self.__isEmitting
+end
+
+function World:__onComponentAddedToEntity(entity)
+
 end
 
 function World:__onEntityGainedComponent(entity, componentName)

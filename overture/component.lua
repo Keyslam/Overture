@@ -11,14 +11,37 @@ local ComponentMt = {
     end
 }
 
+local ComponentInstanceMt = {
+	__index = function(self, key)
+		if (not self.__prototype.validFieldsLookup[key]) then
+			error("Attempt to get invalid field")
+		end
+
+		return rawget(self, key)
+	end,
+
+	__newindex = function(self, key, value)
+		if (not self.__prototype.validFieldsLookup[key]) then
+			error("Attempt to set invalid field")
+		end
+
+		rawset(self, key, value)
+	end
+}
+
 local function new(componentName, componentDefinition)
 	local componentPrototype = setmetatable({
         name = componentName,
 
 		componentDefinition = componentDefinition,
+		validFieldsLookup = {},
 
 		__isComponentPrototype = true,
     }, ComponentMt)
+
+	for _, definition in ipairs(componentDefinition) do
+		componentPrototype.validFieldsLookup[definition.name] = true
+	end
 
     ComponentProvider:register(componentName, componentPrototype)
 
@@ -26,78 +49,41 @@ local function new(componentName, componentDefinition)
 end
 
 function Component:new(...)
-    local componentInstance = {}
-    componentInstance.__prototype = self
-    componentInstance.__isComponent = true
+    local componentInstance = {
+		__isComponent = true,
+		__prototype = self,
+	}
 
     self:populate(componentInstance, ...)
+
+	if (true) then -- TODO: Make this configurable
+		setmetatable(componentInstance, ComponentInstanceMt)
+	end
 
     return componentInstance
 end
 
 function Component:populate(componentInstance, ...)
-	for i, definition in ipairs(self.componentDefinition) do
-		local value = select(i, ...)
-		if (value == nil) then
-			value = definition.default
-		end
+	local nextParamIndex = 1
 
-		componentInstance[definition.name] = value
+	for _, definition in ipairs(self.componentDefinition) do
+		if (definition.excludeConstructor) then
+			componentInstance[definition.name] = nil
+		else
+			local value = select(nextParamIndex, ...)
+			if (value == nil) then
+				value = definition.default
+			end
+
+			componentInstance[definition.name] = value
+			nextParamIndex = nextParamIndex + 1
+		end
 	end
 end
 
-if (Configuration.doArgumentChecking) then
-	local __new = new
-	new = function(componentName, populateFunction)
-		if (type(componentName) ~= "string") then
-			error("") -- TODO: Define error message
-		end
-
-		if (type(populateFunction) ~= "function") then
-			error("") -- TODO: Define error message
-		end
-
-		if (ComponentProvider:has(componentName)) then
-			error("") -- TODO: Define error message
-		end
-
-		return __new(componentName, populateFunction)
-	end
-
-	local __onGiven = Component.onGiven
-	function Component:onGiven(onGivenHandler)
-		if (type(onGivenHandler) ~= "function") then
-			error("") -- TODO: Define error message
-		end
-
-		return __onGiven(self, onGivenHandler)
-	end
-
-	local __onRemove = Component.onRemove
-	function Component:onRemove(onRemoveHandler)
-		if (type(onRemoveHandler) ~= "function") then
-			error("") -- TODO: Define error message
-		end
-
-		return __onRemove(self, onRemoveHandler)
-	end
-
-	local __onGivenSingleton = Component.onGivenSingleton
-	function Component:onGivenSingleton(onGivenSingletonHandler)
-		if (type(onGivenSingletonHandler) ~= "function") then
-			error("") -- TODO: Define error message
-		end
-
-		return __onGivenSingleton(self, onGivenSingletonHandler)
-	end
-
-	local __onRemoveSingleton = Component.onRemoveSingleton
-	function Component:onRemoveSingleton(onRemoveSingletonHandler)
-		if (type(onRemoveSingletonHandler) ~= "function") then
-			error("") -- TODO: Define error message
-		end
-
-		return __onRemoveSingleton(self, onRemoveSingletonHandler)
+function Component:clear(componentInstance)
+	for _, definition in ipairs(self.componentDefinition) do
+		componentInstance[definition.name] = nil
 	end
 end
 
