@@ -8,7 +8,7 @@ local SystemMt = {
 	__index = System,
 }
 
-local function new(systemName, poolDefinition)
+local function new(systemName, poolDefinitions)
 	local system = setmetatable({
 		name = systemName,
 		handlers = {},
@@ -21,26 +21,8 @@ local function new(systemName, poolDefinition)
 	return system
 end
 
-function System:onAdded(onAddedHandler)
-	self.onAddedHandler = onAddedHandler
-
-	return self
-end
-
-function System:onEmit(eventName, handler)
+function System:on(eventName, handler)
 	self.handlers[eventName] = handler
-
-	return self
-end
-
-function System:onMatch(onMatchHandler)
-	self.onMatchHandler = onMatchHandler
-
-	return self
-end
-
-function System:onUnmatch(onUnmatchHandler)
-	self.onUnmatchHandler = onUnmatchHandler
 
 	return self
 end

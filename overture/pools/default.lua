@@ -15,18 +15,7 @@ local function new(world, filter)
 		__removed = {},
 	}, DefaultPoolMt)
 
-	defaultPool.__iteration = 0
-	defaultPool.__iterator = function(a, v)
-		defaultPool.__iteration = defaultPool.__iteration + 1
-		return defaultPool.__entities[defaultPool.__iteration]
-	end
-
 	return defaultPool
-end
-
-function DefaultPool:entities(a)
-	self.iteration = 1
-	return self.__iterator, a, self.__entities[self.iteration]
 end
 
 function DefaultPool:add(e)
@@ -41,7 +30,9 @@ function DefaultPool:has(e)
 	return self.__entities:has(e)
 end
 
-
+function DefaultPool:entities()
+	return ipairs(self.__entities)
+end
 
 function DefaultPool:added()
 	return ipairs(self.__added)

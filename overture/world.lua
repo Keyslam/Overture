@@ -39,6 +39,7 @@ local function new(systemNames)
 
 		local systemPrototype = SystemProvider:get(systemName)
 
+		print(systemPrototype)
 		-- TODO: Build pools
 	end
 

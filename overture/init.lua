@@ -32,5 +32,6 @@ Overture.entity = require(PATH..".entity")
 Overture.component = require(PATH..".component")
 Overture.system = require(PATH..".system")
 Overture.world = require(PATH..".world")
+Overture.pools = require(PATH..".pools")
 
 return Overture
